@@ -60,8 +60,8 @@ def activate_plan_fn(db_engine,parms):
         result = connection.execute(query).fetchone()
         if result is None:
             stmt = insert(users).values(name=user_name).returning(users.c.id)
-            result = connection.execute(stmt)
-            user_id = result[0]
+            result = list(connection.execute(stmt))
+            user_id = result[0][0]
         else:
             user_id = result[0]
             if plan_id is None:
