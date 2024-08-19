@@ -162,3 +162,41 @@ def log_request(db_engine,parms):
             stm = update(keys_table).where(keys_table.c.id ==parms['key_used']).values(quota_left=keys_table.c.quota_left-1)
             connection.execute(stm)
         connection.commit()
+
+def get_left_quota_fn(db_engine,key_id):
+    metadata = MetaData()
+    keys_table = Table('keys', metadata, autoload_with=db_engine)
+
+    
+    
+    with db_engine.connect() as connection:
+        stm1 = select(keys_table.c.quota_left).where(keys_table.c.id == key_id)
+        result = connection.execute(stm1).fetchone()
+        if result is None:
+            return None
+        quota = result[0]
+    return quota
+
+def format_time(td):
+    days = td.days
+    seconds = td.seconds
+    microseconds = td.microseconds
+    
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    milliseconds = microseconds // 1000
+    
+    parts = []
+    
+    if days > 0:
+        parts.append(f"{days} days")
+    if hours > 0:
+        parts.append(f"{hours} hrs")
+    if minutes > 0:
+        parts.append(f"{minutes} min")
+    if seconds > 0:
+        parts.append(f"{seconds} sec")
+    if milliseconds > 0:
+        parts.append(f"{milliseconds} ms")
+    
+    return ', '.join(parts[:3])
